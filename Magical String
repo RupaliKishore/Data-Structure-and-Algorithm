@@ -1,0 +1,34 @@
+Magical String
+
+
+
+
+
+class Solution {
+    public int magicalString(int n) {
+        if (n <= 0) return 0;
+        if (n <= 3) return 1;
+        
+        // Build the magical string using StringBuilder
+        StringBuilder s = new StringBuilder("122");
+        int index = 2; // Index to read next count from
+        int count = 1; // Count of '1's (first three chars have one '1')
+        
+        while (s.length() < n) {
+            int num = s.charAt(index) - '0'; // Get the count (1 or 2)
+            char lastChar = s.charAt(s.length() - 1);
+            char nextChar = (lastChar == '1') ? '2' : '1';
+            
+            // Append nextChar 'num' times
+            for (int i = 0; i < num && s.length() < n; i++) {
+                s.append(nextChar);
+                if (nextChar == '1') {
+                    count++;
+                }
+            }
+            index++;
+        }
+        
+        return count;
+    }
+}
