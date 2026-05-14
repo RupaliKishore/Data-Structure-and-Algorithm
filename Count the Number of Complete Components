@@ -1,0 +1,74 @@
+Count the Number of Complete Components
+
+
+
+import java.util.*;
+
+class Solution {
+    public int countCompleteComponents(int n, int[][] edges) {
+        // Build adjacency list
+        List<Integer>[] graph = new ArrayList[n];
+        for (int i = 0; i < n; i++) {
+            graph[i] = new ArrayList<>();
+        }
+        
+        for (int[] edge : edges) {
+            int u = edge[0];
+            int v = edge[1];
+            graph[u].add(v);
+            graph[v].add(u);
+        }
+        
+        boolean[] visited = new boolean[n];
+        int completeCount = 0;
+        
+        for (int i = 0; i < n; i++) {
+            if (!visited[i]) {
+                // Find all nodes in this component
+                List<Integer> component = new ArrayList<>();
+                dfs(i, graph, visited, component);
+                
+                // Check if component is complete
+                if (isComplete(component, graph)) {
+                    completeCount++;
+                }
+            }
+        }
+        
+        return completeCount;
+    }
+    
+    private void dfs(int node, List<Integer>[] graph, boolean[] visited, List<Integer> component) {
+        visited[node] = true;
+        component.add(node);
+        
+        for (int neighbor : graph[node]) {
+            if (!visited[neighbor]) {
+                dfs(neighbor, graph, visited, component);
+            }
+        }
+    }
+    
+    private boolean isComplete(List<Integer> component, List<Integer>[] graph) {
+        int k = component.size();
+        if (k == 1) return true; // Single node is trivially complete
+        
+        // Convert component to a set for O(1) lookup
+        Set<Integer> nodeSet = new HashSet<>(component);
+        
+        // Check each node has degree k-1 within the component
+        for (int node : component) {
+            int neighborCount = 0;
+            for (int neighbor : graph[node]) {
+                if (nodeSet.contains(neighbor)) {
+                    neighborCount++;
+                }
+            }
+            if (neighborCount != k - 1) {
+                return false;
+            }
+        }
+        
+        return true;
+    }
+}
