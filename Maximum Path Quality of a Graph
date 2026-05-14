@@ -1,0 +1,62 @@
+Maximum Path Quality of a Graph
+
+
+
+
+import java.util.*;
+
+class Solution {
+    private int maxSum = 0;
+    
+    public int maximalPathQuality(int[] values, int[][] edges, int maxTime) {
+        int n = values.length;
+        
+        // Build adjacency list: for each node, store list of [neighbor, time]
+        List<int[]>[] graph = new ArrayList[n];
+        for (int i = 0; i < n; i++) {
+            graph[i] = new ArrayList<>();
+        }
+        
+        for (int[] edge : edges) {
+            int u = edge[0], v = edge[1], time = edge[2];
+            graph[u].add(new int[]{v, time});
+            graph[v].add(new int[]{u, time});
+        }
+        
+        // Track visited nodes to count distinct values only once
+        boolean[] visited = new boolean[n];
+        visited[0] = true;
+        
+        dfs(0, 0, values[0], visited, graph, values, maxTime);
+        
+        return maxSum;
+    }
+    
+    private void dfs(int node, int time, int sum, boolean[] visited, 
+                     List<int[]>[] graph, int[] values, int maxTime) {
+        // Update max sum if we're back at node 0
+        if (node == 0) {
+            maxSum = Math.max(maxSum, sum);
+        }
+        
+        // Explore neighbors
+        for (int[] neighbor : graph[node]) {
+            int nextNode = neighbor[0];
+            int travelTime = neighbor[1];
+            
+            if (time + travelTime > maxTime) continue;
+            
+            // If nextNode not visited, add its value to sum
+            if (!visited[nextNode]) {
+                visited[nextNode] = true;
+                dfs(nextNode, time + travelTime, sum + values[nextNode], 
+                    visited, graph, values, maxTime);
+                visited[nextNode] = false;
+            } else {
+                // Already visited, no new value added
+                dfs(nextNode, time + travelTime, sum, 
+                    visited, graph, values, maxTime);
+            }
+        }
+    }
+}
