@@ -1,0 +1,29 @@
+The k-th Lexicographical String of All Happy Strings of Length n
+
+
+
+class Solution {
+    public String getHappyString(int n, int k) {
+        List<String> happyStrings = new ArrayList<>();
+        backtrack(happyStrings, new StringBuilder(), n);
+        
+        return k <= happyStrings.size() ? happyStrings.get(k - 1) : "";
+    }
+    
+    private void backtrack(List<String> result, StringBuilder current, int n) {
+        if (current.length() == n) {
+            result.add(current.toString());
+            return;
+        }
+        
+        for (char c : new char[]{'a', 'b', 'c'}) {
+            // Check adjacent characters constraint
+            if (current.length() > 0 && current.charAt(current.length() - 1) == c) {
+                continue;
+            }
+            current.append(c);
+            backtrack(result, current, n);
+            current.deleteCharAt(current.length() - 1);
+        }
+    }
+}
