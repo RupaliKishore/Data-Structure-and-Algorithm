@@ -1,0 +1,66 @@
+Bus Routes
+
+
+
+import java.util.*;
+
+class Solution {
+    public int numBusesToDestination(int[][] routes, int source, int target) {
+        if (source == target) return 0;
+        
+        int n = routes.length;
+        
+        // Map from bus stop to list of buses that visit that stop
+        Map<Integer, List<Integer>> stopToBuses = new HashMap<>();
+        
+        for (int i = 0; i < n; i++) {
+            for (int stop : routes[i]) {
+                stopToBuses.computeIfAbsent(stop, k -> new ArrayList<>()).add(i);
+            }
+        }
+        
+        // BFS on buses
+        boolean[] busVisited = new boolean[n];
+        Set<Integer> stopVisited = new HashSet<>();
+        Queue<Integer> queue = new LinkedList<>();
+        
+        // Start BFS from source: take all buses at source
+        for (int bus : stopToBuses.getOrDefault(source, new ArrayList<>())) {
+            busVisited[bus] = true;
+            queue.offer(bus);
+        }
+        stopVisited.add(source);
+        
+        int busesTaken = 0;
+        
+        while (!queue.isEmpty()) {
+            int size = queue.size();
+            busesTaken++;
+            
+            for (int i = 0; i < size; i++) {
+                int bus = queue.poll();
+                
+                // Check all stops of this bus
+                for (int stop : routes[bus]) {
+                    if (stop == target) {
+                        return busesTaken;
+                    }
+                    
+                    if (!stopVisited.contains(stop)) {
+                        stopVisited.add(stop);
+                        
+                        // Take all other buses at this stop
+                        for (int nextBus : stopToBuses.getOrDefault(stop, new ArrayList<>())) {
+                            if (!busVisited[nextBus]) {
+                                busVisited[nextBus] = true;
+                                queue.offer(nextBus);
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        
+        return -1;
+    }
+}
