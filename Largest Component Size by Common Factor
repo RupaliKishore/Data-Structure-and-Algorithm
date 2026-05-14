@@ -1,0 +1,104 @@
+Largest Component Size by Common Factor
+
+
+
+class Solution {
+    class UnionFind {
+        int[] parent;
+        int[] size;
+        
+        UnionFind(int n) {
+            parent = new int[n];
+            size = new int[n];
+            for (int i = 0; i < n; i++) {
+                parent[i] = i;
+                size[i] = 1;
+            }
+        }
+        
+        int find(int x) {
+            if (parent[x] != x) {
+                parent[x] = find(parent[x]);
+            }
+            return parent[x];
+        }
+        
+        void union(int x, int y) {
+            int rootX = find(x);
+            int rootY = find(y);
+            if (rootX == rootY) return;
+            
+            if (size[rootX] < size[rootY]) {
+                parent[rootX] = rootY;
+                size[rootY] += size[rootX];
+            } else {
+                parent[rootY] = rootX;
+                size[rootX] += size[rootY];
+            }
+        }
+        
+        int getSize(int x) {
+            return size[find(x)];
+        }
+    }
+    
+    public int largestComponentSize(int[] nums) {
+        int n = nums.length;
+        UnionFind uf = new UnionFind(n);
+        
+        // Map from factor to the first index that has this factor
+        Map<Integer, Integer> factorToIndex = new HashMap<>();
+        
+        for (int i = 0; i < n; i++) {
+            int num = nums[i];
+            // Get all prime factors of num
+            Set<Integer> factors = getPrimeFactors(num);
+            
+            for (int factor : factors) {
+                if (factorToIndex.containsKey(factor)) {
+                    // Connect current index with previous index having this factor
+                    uf.union(i, factorToIndex.get(factor));
+                } else {
+                    factorToIndex.put(factor, i);
+                }
+            }
+        }
+        
+        // Find maximum component size
+        int maxSize = 0;
+        for (int i = 0; i < n; i++) {
+            maxSize = Math.max(maxSize, uf.getSize(i));
+        }
+        
+        return maxSize;
+    }
+    
+    private Set<Integer> getPrimeFactors(int num) {
+        Set<Integer> factors = new HashSet<>();
+        
+        // Handle factor 2
+        if (num % 2 == 0) {
+            factors.add(2);
+            while (num % 2 == 0) {
+                num /= 2;
+            }
+        }
+        
+        // Handle odd factors
+        for (int i = 3; i <= Math.sqrt(num); i += 2) {
+            if (num % i == 0) {
+                factors.add(i);
+                while (num % i == 0) {
+                    num /= i;
+                }
+            }
+        }
+        
+        // If remaining number is prime > 2
+        if (num > 1) {
+            factors.add(num);
+        }
+        
+        return factors;
+    }
+}
