@@ -1,0 +1,47 @@
+Restore IP Addresses
+
+
+
+class Solution {
+    public List<String> restoreIpAddresses(String s) {
+        List<String> result = new ArrayList<>();
+        backtrack(result, new ArrayList<>(), s, 0);
+        return result;
+    }
+    
+    private void backtrack(List<String> result, List<String> current, 
+                           String s, int start) {
+        // Base case: found all 4 parts and used all characters
+        if (current.size() == 4) {
+            if (start == s.length()) {
+                result.add(String.join(".", current));
+            }
+            return;
+        }
+        
+        // Try taking 1, 2, or 3 digits for the current segment
+        for (int len = 1; len <= 3; len++) {
+            if (start + len > s.length()) break;
+            
+            String segment = s.substring(start, start + len);
+            
+            // Check if segment is valid
+            if (isValid(segment)) {
+                current.add(segment);
+                backtrack(result, current, s, start + len);
+                current.remove(current.size() - 1);
+            }
+        }
+    }
+    
+    private boolean isValid(String segment) {
+        // Leading zero check
+        if (segment.length() > 1 && segment.charAt(0) == '0') {
+            return false;
+        }
+        
+        // Range check
+        int num = Integer.parseInt(segment);
+        return num >= 0 && num <= 255;
+    }
+}
