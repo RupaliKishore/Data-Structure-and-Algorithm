@@ -1,0 +1,49 @@
+ Shortest Palindrome
+
+ 
+
+
+
+class Solution {
+    public String shortestPalindrome(String s) {
+        if (s == null || s.length() <= 1) return s;
+
+        // Build temp: s + "#" + reverse(s)
+        String rev = new StringBuilder(s).reverse().toString();
+        String temp = s + "#" + rev;
+
+        // Build KMP prefix table (LPS array)
+        int[] lps = computeLPS(temp);
+
+        // Length of longest palindromic prefix in s
+        int longestPalPrefixLen = lps[lps.length - 1];
+
+        // Characters to add in front = reverse of remaining suffix
+        String toAdd = rev.substring(0, s.length() - longestPalPrefixLen);
+
+        return toAdd + s;
+    }
+
+    private int[] computeLPS(String str) {
+        int n = str.length();
+        int[] lps = new int[n];
+        int len = 0; // length of previous longest prefix suffix
+        int i = 1;
+
+        while (i < n) {
+            if (str.charAt(i) == str.charAt(len)) {
+                len++;
+                lps[i] = len;
+                i++;
+            } else {
+                if (len != 0) {
+                    len = lps[len - 1];
+                } else {
+                    lps[i] = 0;
+                    i++;
+                }
+            }
+        }
+        return lps;
+    }
+}
