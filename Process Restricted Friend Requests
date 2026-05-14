@@ -1,0 +1,85 @@
+ Process Restricted Friend Requests
+
+
+
+
+ class Solution {
+    public boolean[] friendRequests(int n, int[][] restrictions, int[][] requests) {
+        UnionFind uf = new UnionFind(n);
+        boolean[] result = new boolean[requests.length];
+        
+        for (int i = 0; i < requests.length; i++) {
+            int u = requests[i][0];
+            int v = requests[i][1];
+            
+            int rootU = uf.find(u);
+            int rootV = uf.find(v);
+            
+            // If already friends, request automatically succeeds
+            if (rootU == rootV) {
+                result[i] = true;
+                continue;
+            }
+            
+            boolean valid = true;
+            // Check all restrictions to see if this union would violate any
+            for (int[] restriction : restrictions) {
+                int rootA = uf.find(restriction[0]);
+                int rootB = uf.find(restriction[1]);
+                
+                // If the two groups we want to merge contain a restricted pair
+                if ((rootU == rootA && rootV == rootB) || 
+                    (rootU == rootB && rootV == rootA)) {
+                    valid = false;
+                    break;
+                }
+            }
+            
+            if (valid) {
+                result[i] = true;
+                uf.union(rootU, rootV);
+            } else {
+                result[i] = false;
+            }
+        }
+        
+        return result;
+    }
+    
+    class UnionFind {
+        int[] parent;
+        int[] rank;
+        
+        UnionFind(int n) {
+            parent = new int[n];
+            rank = new int[n];
+            for (int i = 0; i < n; i++) {
+                parent[i] = i;
+                rank[i] = 1;
+            }
+        }
+        
+        int find(int x) {
+            if (parent[x] != x) {
+                parent[x] = find(parent[x]); // Path compression
+            }
+            return parent[x];
+        }
+        
+        void union(int x, int y) {
+            int rootX = find(x);
+            int rootY = find(y);
+            if (rootX != rootY) {
+                // Union by rank
+                if (rank[rootX] > rank[rootY]) {
+                    parent[rootY] = rootX;
+                } else if (rank[rootX] < rank[rootY]) {
+                    parent[rootX] = rootY;
+                } else {
+                    parent[rootY] = rootX;
+                    rank[rootX]++;
+                }
+            }
+        }
+    }
+}
