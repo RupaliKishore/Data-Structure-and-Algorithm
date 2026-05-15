@@ -2,88 +2,88 @@ Find Building Where Alice and Bob Can Meet
 
 
 
-
 import java.util.*;
+
+public class FindBuildingWhereAliceBobMeet {
+    public static void main(String[] args) {
+        Solution sol = new Solution();
+        
+        int[] heights = {6, 4, 8, 5, 2, 7};
+        int[][] queries = {{0, 1}, {0, 3}, {2, 5}, {3, 4}, {1, 2}};
+        
+        int[] result = sol.leftmostBuildingQueries(heights, queries);
+        System.out.println(Arrays.toString(result));
+        // Expected: [2, 2, 5, -1, 2]
+    }
+}
 
 class Solution {
     public int[] leftmostBuildingQueries(int[] heights, int[][] queries) {
         int n = heights.length;
         int q = queries.length;
-        int[] result = new int[q];
+        int[] ans = new int[q];
         
-        // Precompute next greater element to the right
-        int[] nextGreater = new int[n];
-        Arrays.fill(nextGreater, n);
-        Stack<Integer> stack = new Stack<>();
+        // Build sparse table for range maximum
+        int log = (int) (Math.log(n) / Math.log(2)) + 1;
+        int[][] st = new int[n][log];
         
-        for (int i = n - 1; i >= 0; i--) {
-            while (!stack.isEmpty() && heights[stack.peek()] <= heights[i]) {
-                stack.pop();
-            }
-            if (!stack.isEmpty()) {
-                nextGreater[i] = stack.peek();
-            }
-            stack.push(i);
+        for (int i = 0; i < n; i++) {
+            st[i][0] = heights[i];
         }
         
-        // Process each query
+        for (int j = 1; j < log; j++) {
+            for (int i = 0; i + (1 << j) <= n; i++) {
+                st[i][j] = Math.max(st[i][j - 1], st[i + (1 << (j - 1))][j - 1]);
+            }
+        }
+        
         for (int qi = 0; qi < q; qi++) {
             int a = queries[qi][0];
             int b = queries[qi][1];
             
             if (a == b) {
-                result[qi] = a;
+                ans[qi] = a;
                 continue;
             }
             
-            // Ensure a is the smaller index
+            // Ensure a < b
             if (a > b) {
                 int temp = a;
                 a = b;
                 b = temp;
             }
             
-            // Case: a < b and heights[a] < heights[b]
+            // If Alice can directly reach Bob's starting point
             if (heights[a] < heights[b]) {
-                result[qi] = b;
+                ans[qi] = b;
                 continue;
             }
             
-            // Need to find smallest i > b such that heights[i] > max(heights[a], heights[b])
-            int targetHeight = Math.max(heights[a], heights[b]);
-            
-            // Binary search on index, using next greater as a stepping stone
+            // Binary search for the leftmost building > b where max height >= heights[a]
+            int target = heights[a];
             int left = b, right = n - 1;
-            int answer = -1;
+            int idx = -1;
             
             while (left <= right) {
                 int mid = left + (right - left) / 2;
-                if (canReach(heights, nextGreater, a, mid, targetHeight) &&
-                    canReach(heights, nextGreater, b, mid, targetHeight)) {
-                    answer = mid;
+                int maxInRange = getMax(st, b, mid);
+                if (maxInRange > target) {
+                    idx = mid;
                     right = mid - 1;
                 } else {
                     left = mid + 1;
                 }
             }
             
-            result[qi] = answer;
+            ans[qi] = idx;
         }
         
-        return result;
+        return ans;
     }
     
-    private boolean canReach(int[] heights, int[] nextGreater, int start, int target, int targetHeight) {
-        if (start == target) return heights[start] > targetHeight;
-        if (heights[start] > targetHeight) return true;
-        
-        // Jump using next greater
-        int curr = start;
-        while (curr < target && curr != -1) {
-            if (heights[curr] > targetHeight) return true;
-            curr = nextGreater[curr];
-            if (curr > target) return false;
-        }
-        return curr == target && heights[curr] > targetHeight;
+    private int getMax(int[][] st, int l, int r) {
+        int len = r - l + 1;
+        int k = (int) (Math.log(len) / Math.log(2));
+        return Math.max(st[l][k], st[r - (1 << k) + 1][k]);
     }
 }
