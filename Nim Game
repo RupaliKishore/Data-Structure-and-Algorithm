@@ -1,0 +1,25 @@
+ Nim Game
+
+
+
+public class NimGame {
+    public static void main(String[] args) {
+        Solution sol = new Solution();
+        
+        System.out.println(sol.canWinNim(1));  // true
+        System.out.println(sol.canWinNim(2));  // true
+        System.out.println(sol.canWinNim(3));  // true
+        System.out.println(sol.canWinNim(4));  // false
+        System.out.println(sol.canWinNim(5));  // true
+        System.out.println(sol.canWinNim(6));  // true
+        System.out.println(sol.canWinNim(7));  // true
+        System.out.println(sol.canWinNim(8));  // false
+        System.out.println(sol.canWinNim(100)); // false (100 % 4 == 0)
+    }
+}
+
+class Solution {
+    public boolean canWinNim(int n) {
+        return n % 4 != 0;
+    }
+}
