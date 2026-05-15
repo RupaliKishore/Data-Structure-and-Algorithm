@@ -1,0 +1,31 @@
+ The kth Factor of n
+
+
+
+import java.util.*;
+
+class Solution {
+    public int kthFactor(int n, int k) {
+        List<Integer> smallFactors = new ArrayList<>();
+        List<Integer> largeFactors = new ArrayList<>();
+        
+        for (int i = 1; i * i <= n; i++) {
+            if (n % i == 0) {
+                smallFactors.add(i);
+                if (i != n / i) {
+                    largeFactors.add(n / i);
+                }
+            }
+        }
+        
+        // Combine: small factors (ascending) + large factors (descending)
+        int total = smallFactors.size() + largeFactors.size();
+        if (k > total) return -1;
+        
+        if (k <= smallFactors.size()) {
+            return smallFactors.get(k - 1);
+        } else {
+            return largeFactors.get(largeFactors.size() - (k - smallFactors.size()));
+        }
+    }
+}
