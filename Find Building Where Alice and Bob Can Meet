@@ -1,0 +1,89 @@
+Find Building Where Alice and Bob Can Meet
+
+
+
+
+import java.util.*;
+
+class Solution {
+    public int[] leftmostBuildingQueries(int[] heights, int[][] queries) {
+        int n = heights.length;
+        int q = queries.length;
+        int[] result = new int[q];
+        
+        // Precompute next greater element to the right
+        int[] nextGreater = new int[n];
+        Arrays.fill(nextGreater, n);
+        Stack<Integer> stack = new Stack<>();
+        
+        for (int i = n - 1; i >= 0; i--) {
+            while (!stack.isEmpty() && heights[stack.peek()] <= heights[i]) {
+                stack.pop();
+            }
+            if (!stack.isEmpty()) {
+                nextGreater[i] = stack.peek();
+            }
+            stack.push(i);
+        }
+        
+        // Process each query
+        for (int qi = 0; qi < q; qi++) {
+            int a = queries[qi][0];
+            int b = queries[qi][1];
+            
+            if (a == b) {
+                result[qi] = a;
+                continue;
+            }
+            
+            // Ensure a is the smaller index
+            if (a > b) {
+                int temp = a;
+                a = b;
+                b = temp;
+            }
+            
+            // Case: a < b and heights[a] < heights[b]
+            if (heights[a] < heights[b]) {
+                result[qi] = b;
+                continue;
+            }
+            
+            // Need to find smallest i > b such that heights[i] > max(heights[a], heights[b])
+            int targetHeight = Math.max(heights[a], heights[b]);
+            
+            // Binary search on index, using next greater as a stepping stone
+            int left = b, right = n - 1;
+            int answer = -1;
+            
+            while (left <= right) {
+                int mid = left + (right - left) / 2;
+                if (canReach(heights, nextGreater, a, mid, targetHeight) &&
+                    canReach(heights, nextGreater, b, mid, targetHeight)) {
+                    answer = mid;
+                    right = mid - 1;
+                } else {
+                    left = mid + 1;
+                }
+            }
+            
+            result[qi] = answer;
+        }
+        
+        return result;
+    }
+    
+    private boolean canReach(int[] heights, int[] nextGreater, int start, int target, int targetHeight) {
+        if (start == target) return heights[start] > targetHeight;
+        if (heights[start] > targetHeight) return true;
+        
+        // Jump using next greater
+        int curr = start;
+        while (curr < target && curr != -1) {
+            if (heights[curr] > targetHeight) return true;
+            curr = nextGreater[curr];
+            if (curr > target) return false;
+        }
+        return curr == target && heights[curr] > targetHeight;
+    }
+}
