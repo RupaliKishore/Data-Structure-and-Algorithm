@@ -1,0 +1,119 @@
+Find Critical and Pseudo-Critical Edges in Minimum Spanning Tree
+
+
+
+class Solution {
+    public List<List<Integer>> findCriticalAndPseudoCriticalEdges(int n, int[][] edges) {
+        int m = edges.length;
+        
+        // Store edges with original indices
+        int[][] edgesWithIndex = new int[m][4];
+        for (int i = 0; i < m; i++) {
+            edgesWithIndex[i][0] = edges[i][0];
+            edgesWithIndex[i][1] = edges[i][1];
+            edgesWithIndex[i][2] = edges[i][2];
+            edgesWithIndex[i][3] = i;
+        }
+        
+        // Sort by weight
+        Arrays.sort(edgesWithIndex, (a, b) -> a[2] - b[2]);
+        
+        // First pass: find MST weight
+        UnionFind uf = new UnionFind(n);
+        int mstWeight = 0;
+        for (int[] edge : edgesWithIndex) {
+            if (uf.union(edge[0], edge[1])) {
+                mstWeight += edge[2];
+            }
+        }
+        
+        List<Integer> critical = new ArrayList<>();
+        List<Integer> pseudo = new ArrayList<>();
+        
+        // Second pass: classify each edge
+        for (int i = 0; i < m; i++) {
+            int[] currentEdge = null;
+            for (int[] e : edgesWithIndex) {
+                if (e[3] == i) {
+                    currentEdge = e;
+                    break;
+                }
+            }
+            
+            // Test without this edge
+            UnionFind ufWithout = new UnionFind(n);
+            int weightWithout = 0;
+            int edgesUsed = 0;
+            
+            for (int[] edge : edgesWithIndex) {
+                if (edge[3] == i) continue;
+                if (ufWithout.union(edge[0], edge[1])) {
+                    weightWithout += edge[2];
+                    edgesUsed++;
+                }
+            }
+            
+            if (edgesUsed != n - 1 || weightWithout > mstWeight) {
+                critical.add(i);
+                continue;
+            }
+            
+            // Test with this edge forced
+            UnionFind ufWith = new UnionFind(n);
+            ufWith.union(currentEdge[0], currentEdge[1]);
+            int weightWith = currentEdge[2];
+            edgesUsed = 1;
+            
+            for (int[] edge : edgesWithIndex) {
+                if (edge[3] == i) continue;
+                if (ufWith.union(edge[0], edge[1])) {
+                    weightWith += edge[2];
+                    edgesUsed++;
+                }
+            }
+            
+            if (edgesUsed == n - 1 && weightWith == mstWeight) {
+                pseudo.add(i);
+            }
+        }
+        
+        return Arrays.asList(critical, pseudo);
+    }
+    
+    class UnionFind {
+        int[] parent;
+        int[] rank;
+        
+        UnionFind(int n) {
+            parent = new int[n];
+            rank = new int[n];
+            for (int i = 0; i < n; i++) {
+                parent[i] = i;
+                rank[i] = 1;
+            }
+        }
+        
+        int find(int x) {
+            if (parent[x] != x) {
+                parent[x] = find(parent[x]);
+            }
+            return parent[x];
+        }
+        
+        boolean union(int x, int y) {
+            int rootX = find(x);
+            int rootY = find(y);
+            if (rootX == rootY) return false;
+            
+            if (rank[rootX] < rank[rootY]) {
+                parent[rootX] = rootY;
+            } else if (rank[rootX] > rank[rootY]) {
+                parent[rootY] = rootX;
+            } else {
+                parent[rootY] = rootX;
+                rank[rootX]++;
+            }
+            return true;
+        }
+    }
+}
