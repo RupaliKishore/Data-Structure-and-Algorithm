@@ -1,0 +1,80 @@
+Cat and Mouse
+
+
+
+class Solution {
+    public int catMouseGame(int[][] graph) {
+        int n = graph.length;
+        final int DRAW = 0, MOUSE = 1, CAT = 2;
+        int[][][] color = new int[n][n][3];
+        int[][][] degree = new int[n][n][3];
+
+        for (int i = 0; i < n; i++) {
+            for (int j = 0; j < n; j++) {
+                degree[i][j][1] = graph[i].length;
+                degree[i][j][2] = graph[j].length;
+                for (int k : graph[j]) {
+                    if (k == 0) {
+                        degree[i][j][2]--;
+                        break;
+                    }
+                }
+            }
+        }
+
+        Queue<int[]> queue = new LinkedList<>();
+        for (int i = 1; i < n; i++) {
+            color[0][i][1] = MOUSE;
+            color[0][i][2] = MOUSE;
+            queue.add(new int[]{0, i, 1});
+            queue.add(new int[]{0, i, 2});
+        }
+        for (int i = 1; i < n; i++) {
+            color[i][i][1] = CAT;
+            color[i][i][2] = CAT;
+            queue.add(new int[]{i, i, 1});
+            queue.add(new int[]{i, i, 2});
+        }
+
+        while (!queue.isEmpty()) {
+            int[] node = queue.poll();
+            int i = node[0], j = node[1], t = node[2];
+            int curColor = color[i][j][t];
+
+            if (t == 1) {
+                for (int prev : graph[j]) {
+                    if (prev == 0) continue;
+                    if (color[i][prev][2] == DRAW) {
+                        if (curColor == CAT) {
+                            color[i][prev][2] = CAT;
+                            queue.add(new int[]{i, prev, 2});
+                        } else {
+                            degree[i][prev][2]--;
+                            if (degree[i][prev][2] == 0) {
+                                color[i][prev][2] = MOUSE;
+                                queue.add(new int[]{i, prev, 2});
+                            }
+                        }
+                    }
+                }
+            } else {
+                for (int prev : graph[i]) {
+                    if (color[prev][j][1] == DRAW) {
+                        if (curColor == MOUSE) {
+                            color[prev][j][1] = MOUSE;
+                            queue.add(new int[]{prev, j, 1});
+                        } else {
+                            degree[prev][j][1]--;
+                            if (degree[prev][j][1] == 0) {
+                                color[prev][j][1] = CAT;
+                                queue.add(new int[]{prev, j, 1});
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        return color[1][2][1];
+    }
+}
