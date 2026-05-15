@@ -1,0 +1,27 @@
+Longest Word in Dictionary
+
+
+
+import java.util.*;
+
+class Solution {
+    public String longestWord(String[] words) {
+        Arrays.sort(words);
+        Set<String> validWords = new HashSet<>();
+        String result = "";
+        
+        for (String word : words) {
+            // Single character words or words whose prefix exists
+            if (word.length() == 1 || validWords.contains(word.substring(0, word.length() - 1))) {
+                validWords.add(word);
+                // Update result: longer word or lexicographically smaller for same length
+                if (word.length() > result.length() ||
+                    (word.length() == result.length() && word.compareTo(result) < 0)) {
+                    result = word;
+                }
+            }
+        }
+        
+        return result;
+    }
+}
