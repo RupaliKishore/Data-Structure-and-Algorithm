@@ -1,0 +1,79 @@
+Range Sum Query - Mutable
+
+
+
+class NumArray {
+    private int[] tree;  // segment tree array
+    private int n;
+    
+    public NumArray(int[] nums) {
+        n = nums.length;
+        tree = new int[4 * n];  // Safe size: 4*n is enough for segment tree
+        buildTree(nums, 0, 0, n - 1);
+    }
+    
+    private void buildTree(int[] nums, int node, int start, int end) {
+        if (start == end) {
+            tree[node] = nums[start];
+            return;
+        }
+        
+        int mid = start + (end - start) / 2;
+        int leftChild = 2 * node + 1;
+        int rightChild = 2 * node + 2;
+        
+        buildTree(nums, leftChild, start, mid);
+        buildTree(nums, rightChild, mid + 1, end);
+        
+        tree[node] = tree[leftChild] + tree[rightChild];
+    }
+    
+    public void update(int index, int val) {
+        updateTree(0, 0, n - 1, index, val);
+    }
+    
+    private void updateTree(int node, int start, int end, int index, int val) {
+        if (start == end) {
+            tree[node] = val;
+            return;
+        }
+        
+        int mid = start + (end - start) / 2;
+        int leftChild = 2 * node + 1;
+        int rightChild = 2 * node + 2;
+        
+        if (index <= mid) {
+            updateTree(leftChild, start, mid, index, val);
+        } else {
+            updateTree(rightChild, mid + 1, end, index, val);
+        }
+        
+        tree[node] = tree[leftChild] + tree[rightChild];
+    }
+    
+    public int sumRange(int left, int right) {
+        return queryTree(0, 0, n - 1, left, right);
+    }
+    
+    private int queryTree(int node, int start, int end, int left, int right) {
+        // No overlap
+        if (right < start || left > end) {
+            return 0;
+        }
+        
+        // Complete overlap
+        if (left <= start && end <= right) {
+            return tree[node];
+        }
+        
+        // Partial overlap
+        int mid = start + (end - start) / 2;
+        int leftChild = 2 * node + 1;
+        int rightChild = 2 * node + 2;
+        
+        int leftSum = queryTree(leftChild, start, mid, left, right);
+        int rightSum = queryTree(rightChild, mid + 1, end, left, right);
+        
+        return leftSum + rightSum;
+    }
+}
